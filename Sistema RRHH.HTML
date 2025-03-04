@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema RRHH - HSL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --jade: #00A86B;
+            --jade-hover: #008757;
+            --fondo: #f8f9fa;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: var(--fondo);
+        }
+
+        /* Layout Principal */
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Barra Lateral */
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            display: none;
+            padding: 15px;
+        }
+
+        .sidebar.visible {
+            display: block;
+        }
+
+        .sidebar img {
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .sidebar-menu li button {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            color: #333;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .sidebar-menu li button:hover {
+            background: var(--fondo);
+            color: var(--jade);
+        }
+
+        /* Contenido Principal */
+        .content {
+            flex: 1;
+            padding: 20px;
+        }
+
+        /* Tarjetas y Formularios */
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button.primary {
+            background: var(--jade);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button.primary:hover {
+            background: var(--jade-hover);
+        }
+
+        button.secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            width: 50%;
+            margin: 0 auto;
+            display: block;
+        }
+
+        button.secondary:hover {
+            background: #5a6268;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Barra Lateral -->
+        <div class="sidebar" id="sidebar">
+            <img src="LOGO HOSPITAL ultimoo.jpg" alt="Hospital Sirio Libanes Logo">
+            
+            <!-- Menú Empleado -->
+            <ul class="sidebar-menu" id="employeeMenu">
+                <li><button onclick="showSection('datos')">📄 Mis Datos</button></li>
+                <li><button onclick="showSection('avisos')">📋 Avisos de Inasistencia</button></li>
+                <li><button onclick="showSection('vacaciones')">🏖️ Vacaciones</button></li>
+                <li><button onclick="showSection('licencias')">📑 Licencias</button></li>
+                <li><button onclick="showSection('beneficios')">🎁 Beneficios</button></li>
+                <li><button onclick="showSection('novedades')">📬 Novedades</button></li>
+                <li><button onclick="logout()">🚪 Salir</button></li>
+            </ul>
+
+            <!-- Menú Administrador -->
+            <ul class="sidebar-menu hidden" id="adminMenu">
+                <li><button onclick="showSection('legajos')">👥 Legajos</button></li>
+                <li><button onclick="showSection('solicitudes')">📬 Solicitudes</button></li>
+                <li><button onclick="logout()">🚪 Salir</button></li>
+            </ul>
+        </div>
+
+        <!-- Contenido Principal -->
+        <div class="content" id="mainContent">
+            <!-- Login -->
+            <div class="card" id="loginSection">
+                <h2>Acceso al Sistema</h2>
+                <input type="text" id="inputCuil" placeholder="CUIL">
+                <input type="password" id="inputPass" placeholder="Contraseña">
+                <button class="primary" onclick="login()">Ingresar</button>
+                <button class="secondary" onclick="showRegister()">Nuevo Usuario</button>
+                <div id="loginError" class="error"></div>
+            </div>
+
+            <!-- Registro -->
+            <div class="card hidden" id="registerSection">
+                <h2>Registro de Usuario</h2>
+                <input type="number" id="regLegajo" placeholder="Legajo">
+                <input type="text" id="regNombre" placeholder="Nombre Completo">
+                <input type="number" id="regDNI" placeholder="DNI">
+                <input type="text" id="regCuil" placeholder="CUIL">
+                <input type="text" id="regDireccion" placeholder="Dirección">
+                <input type="tel" id="regTel" placeholder="Teléfono">
+                <input type="email" id="regEmail" placeholder="Email">
+                <input type="password" id="regPass" placeholder="Contraseña">
+                <button class="primary" onclick="register()">Registrar</button>
+                <button class="primary" onclick="showLogin()">Cancelar</button>
+                <div id="regError" class="error"></div>
+            </div>
+
+            <!-- Secciones Empleado -->
+            <div id="employeeSections" class="hidden">
+                <!-- Datos Personales -->
+                <div class="card" id="datosSection">
+                    <h3>Mis Datos</h3>
+                    <form id="datosForm"></form>
+                </div>
+
+                <!-- Avisos de Inasistencia -->
+                <div class="card hidden" id="avisosSection">
+                    <h3>Avisos de Inasistencia</h3>
+                    <select id="tipoInasistencia">
+                        <option value="medico">Asistencia Médica</option>
+                        <option value="fallecimiento">Fallecimiento de Familiar</option>
+                    </select>
+                    <div id="medicoSection">
+                        <input type="date" id="medicoFecha" disabled>
+                        <input type="file" id="medicoArchivo" accept=".pdf,.jpg" style="margin: 10px 0;">
+                        <button class="primary" onclick="solicitarAsistenciaMedica()">Enviar</button>
+                    </div>
+                    <div id="fallecimientoSection" class="hidden">
+                        <select id="fallecimientoTipo">
+                            <option value="padres">Padres</option>
+                            <option value="hermanos">Hermanos</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                        <input type="date" id="fallecimientoInicio">
+                        <input type="date" id="fallecimientoFin">
+                        <button class="primary" onclick="solicitarFallecimiento()">Enviar</button>
+                    </div>
+                </div>
+
+                <!-- Solicitud de Vacaciones -->
+                <div class="card hidden" id="vacacionesSection">
+                    <h3>Solicitud de Vacaciones</h3>
+                    <input type="date" id="vacacionesInicio">
+                    <input type="date" id="vacacionesFin">
+                    <button class="primary" onclick="solicitarVacaciones()">Enviar</button>
+                </div>
+
+                <!-- Solicitud de Licencias -->
+                <div class="card hidden" id="licenciasSection">
+                    <h3>Solicitud de Licencias</h3>
+                    <select id="licenciaTipo">
+                        <option value="enfermedad">Enfermedad</option>
+                        <option value="maternidad">Maternidad</option>
+                        <option value="paternidad">Paternidad</option>
+                        <option value="sin_goce">Licencia sin goce de haberes</option>
+                    </select>
+                    <input type="date" id="licenciaInicio">
+                    <input type="date" id="licenciaFin">
+                    <button class="primary" onclick="solicitarLicencia()">Enviar</button>
+                </div>
+
+                <!-- Beneficios -->
+                <div class="card hidden" id="beneficiosSection">
+                    <h3>Beneficios</h3>
+                    <h4>Días por Trámites</h4>
+                    <p>Días disponibles: <span id="diasDisponibles"></span></p>
+                    <input type="number" id="diasTramites" min="1" max="3" placeholder="Días a solicitar">
+                    <button class="primary" onclick="solicitarDiasTramites()">Solicitar</button>
+                </div>
+
+                <!-- Buzón de Novedades -->
+                <div class="card hidden" id="novedadesSection">
+                    <h3>Novedades</h3>
+                    <div id="novedadesList"></div>
+                </div>
+            </div>
+
+            <!-- Secciones Administrador -->
+            <div id="adminSections" class="hidden">
+                <!-- Gestión de Legajos -->
+                <div class="card" id="legajosSection">
+                    <h3>Legajos</h3>
+                    <input type="text" id="busqueda" placeholder="Buscar...">
+                    <div id="resultadosLegajos" style="margin-top:15px;"></div>
+                </div>
+
+                <!-- Gestión de Solicitudes -->
+                <div class="card hidden" id="solicitudesSection">
+                    <h3>Solicitudes</h3>
+                    <div id="solicitudesList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+// Base de datos en localStorage
+let users = JSON.parse(localStorage.getItem('hsl_users')) || [];
+const ADMIN = { cuil: '30545873024', password: '1234', role: 'admin' };
+
+// Funciones de Navegación
+function showSection(section) {
+    document.querySelectorAll('.card').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`${section}Section`).classList.remove('hidden');
+    if (section === 'solicitudes') loadSolicitudes();
+    if (section === 'novedades') loadNovedades();
+    if (section === 'beneficios') loadDiasTramites();
+    if (section === 'avisos') {
+        document.getElementById('medicoSection').classList.remove('hidden');
+        document.getElementById('fallecimientoSection').classList.add('hidden');
+        document.getElementById('medicoFecha').valueAsDate = new Date();
+    }
+}
+
+function showLogin() {
+    document.getElementById('registerSection').classList.add('hidden');
+    document.getElementById('loginSection').classList.remove('hidden');
+}
+
+function showRegister() {
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('registerSection').classList.remove('hidden');
+}
+
+// Registro de Usuarios
+function register() {
+    const user = {
+        legajo: document.getElementById('regLegajo').value,
+        nombre: document.getElementById('regNombre').value,
+        dni: document.getElementById('regDNI').value,
+        cuil: document.getElementById('regCuil').value,
+        direccion: document.getElementById('regDireccion').value,
+        telefono: document.getElementById('regTel').value,
+        email: document.getElementById('regEmail').value,
+        password: document.getElementById('regPass').value,
+        role: 'empleado',
+        solicitudes: [],
+        novedades: [],
+        diasTramites: 3 // Días por trámites iniciales
+    };
+
+    if (users.some(u => u.cuil === user.cuil)) {
+        document.getElementById('regError').textContent = 'CUIL ya registrado';
+        return;
+    }
+
+    users.push(user);
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    alert('Registro exitoso!');
+    showLogin();
+}
+
+// Sistema de Login
+function login() {
+    const cuil = document.getElementById('inputCuil').value;
+    const pass = document.getElementById('inputPass').value;
+
+    if (cuil === ADMIN.cuil && pass === ADMIN.password) {
+        loadAdminPanel();
+        return;
+    }
+
+    const user = users.find(u => u.cuil === cuil && u.password === pass);
+    if (user) {
+        loadEmployeePanel(user);
+    } else {
+        document.getElementById('loginError').textContent = 'Credenciales incorrectas';
+    }
+}
+
+function loadAdminPanel() {
+    document.getElementById('sidebar').classList.add('visible');
+    document.getElementById('adminMenu').classList.remove('hidden');
+    document.getElementById('employeeMenu').classList.add('hidden');
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('adminSections').classList.remove('hidden');
+    loadLegajos();
+}
+
+function loadEmployeePanel(user) {
+    document.getElementById('sidebar').classList.add('visible');
+    document.getElementById('employeeMenu').classList.remove('hidden');
+    document.getElementById('adminMenu').classList.add('hidden');
+    document.getElementById('loginSection').classList.add('hidden');
+    document.getElementById('employeeSections').classList.remove('hidden');
+    loadUserData(user);
+}
+
+function logout() {
+    document.getElementById('sidebar').classList.remove('visible');
+    document.getElementById('loginSection').classList.remove('hidden');
+    document.getElementById('adminSections').classList.add('hidden');
+    document.getElementById('employeeSections').classList.add('hidden');
+}
+
+// Funcionalidades Administrador
+function loadLegajos() {
+    const contenedor = document.getElementById('resultadosLegajos');
+    contenedor.innerHTML = users.map(user => `
+        <div class="card" style="margin:10px 0; padding:15px;">
+            <h4>${user.nombre}</h4>
+            <p>Legajo: ${user.legajo}<br>
+            CUIL: ${user.cuil}<br>
+            Días por trámites restantes: ${user.diasTramites}</p>
+        </div>
+    `).join('');
+}
+
+function loadSolicitudes() {
+    const contenedor = document.getElementById('solicitudesList');
+    let solicitudes = [];
+    users.forEach(user => {
+        user.solicitudes.forEach(solicitud => {
+            solicitud.legajo = user.legajo;
+            solicitud.nombre = user.nombre;
+            solicitudes.push(solicitud);
+        });
+    });
+
+    contenedor.innerHTML = solicitudes.map(solicitud => `
+        <div class="card" style="margin:10px 0; padding:15px;">
+            <h4>${solicitud.nombre} (Legajo: ${solicitud.legajo})</h4>
+            <p>Tipo: ${solicitud.tipo}<br>
+            Fecha: ${solicitud.fecha}<br>
+            Estado: 
+            <select id="estado-${solicitud.id}">
+                <option value="En Revisión" ${solicitud.estado === 'En Revisión' ? 'selected' : ''}>En Revisión</option>
+                <option value="Aprobado" ${solicitud.estado === 'Aprobado' ? 'selected' : ''}>Aprobado</option>
+                <option value="Denegado" ${solicitud.estado === 'Denegado' ? 'selected' : ''}>Denegado</option>
+            </select>
+            </p>
+            <button class="primary" onclick="actualizarEstado('${solicitud.id}')">Actualizar Estado</button>
+        </div>
+    `).join('');
+}
+
+function actualizarEstado(id) {
+    const estado = document.getElementById(`estado-${id}`).value;
+    users.forEach(user => {
+        user.solicitudes.forEach(solicitud => {
+            if (solicitud.id === id) {
+                solicitud.estado = estado;
+                user.novedades.push(`Solicitud de ${solicitud.tipo} ${estado}`);
+            }
+        });
+    });
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    loadSolicitudes();
+}
+
+// Funcionalidades Empleado
+function loadUserData(user) {
+    const form = document.getElementById('datosForm');
+    form.innerHTML = Object.entries(user)
+        .filter(([key]) => !['password', 'role', 'solicitudes', 'novedades'].includes(key))
+        .map(([key, value]) => `
+            <label>${key.toUpperCase()}:</label>
+            <input type="text" value="${value}" ${key === 'cuil' ? 'readonly' : ''}>
+        `).join('');
+}
+
+function solicitarAsistenciaMedica() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    const archivo = document.getElementById('medicoArchivo').files[0];
+    if (archivo && archivo.size > 20 * 1024 * 1024) {
+        alert('El archivo no puede superar los 20MB');
+        return;
+    }
+
+    const solicitud = {
+        id: Date.now().toString(),
+        tipo: 'Asistencia Médica',
+        fecha: document.getElementById('medicoFecha').value,
+        archivo: archivo ? archivo.name : null,
+        estado: 'En Revisión'
+    };
+    user.solicitudes.push(solicitud);
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    alert('Solicitud enviada');
+}
+
+function solicitarFallecimiento() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    const solicitud = {
+        id: Date.now().toString(),
+        tipo: 'Fallecimiento de Familiar',
+        tipoFamiliar: document.getElementById('fallecimientoTipo').value,
+        inicio: document.getElementById('fallecimientoInicio').value,
+        fin: document.getElementById('fallecimientoFin').value,
+        estado: 'En Revisión'
+    };
+    user.solicitudes.push(solicitud);
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    alert('Solicitud enviada');
+}
+
+function solicitarVacaciones() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    const solicitud = {
+        id: Date.now().toString(),
+        tipo: 'Vacaciones',
+        inicio: document.getElementById('vacacionesInicio').value,
+        fin: document.getElementById('vacacionesFin').value,
+        estado: 'En Revisión'
+    };
+    user.solicitudes.push(solicitud);
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    alert('Solicitud enviada');
+}
+
+function solicitarLicencia() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    const solicitud = {
+        id: Date.now().toString(),
+        tipo: 'Licencia',
+        tipoLicencia: document.getElementById('licenciaTipo').value,
+        inicio: document.getElementById('licenciaInicio').value,
+        fin: document.getElementById('licenciaFin').value,
+        estado: 'En Revisión'
+    };
+    user.solicitudes.push(solicitud);
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    alert('Solicitud enviada');
+}
+
+function loadNovedades() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    const contenedor = document.getElementById('novedadesList');
+    contenedor.innerHTML = user.novedades.map(novedad => `
+        <div class="card" style="margin:10px 0; padding:15px;">
+            <p>${novedad}</p>
+        </div>
+    `).join('');
+}
+
+// Beneficios: Días por Trámites
+function loadDiasTramites() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    document.getElementById('diasDisponibles').textContent = user.diasTramites;
+}
+
+function solicitarDiasTramites() {
+    const user = users.find(u => u.cuil === document.getElementById('inputCuil').value);
+    const dias = parseInt(document.getElementById('diasTramites').value);
+
+    if (dias > user.diasTramites) {
+        alert('No tienes suficientes días disponibles.');
+        return;
+    }
+
+    user.diasTramites -= dias;
+    user.solicitudes.push({
+        id: Date.now().toString(),
+        tipo: 'Días por Trámites',
+        dias: dias,
+        estado: 'En Revisión'
+    });
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+    alert('Solicitud enviada');
+    loadDiasTramites();
+}
+
+// Inicialización
+if (!users.find(u => u.cuil === ADMIN.cuil)) {
+    users.push(ADMIN);
+    localStorage.setItem('hsl_users', JSON.stringify(users));
+}
+
+// Cambiar entre secciones de avisos
+document.getElementById('tipoInasistencia').addEventListener('change', function() {
+    if (this.value === 'medico') {
+        document.getElementById('medicoSection').classList.remove('hidden');
+        document.getElementById('fallecimientoSection').classList.add('hidden');
+    } else {
+        document.getElementById('medicoSection').classList.add('hidden');
+        document.getElementById('fallecimientoSection').classList.remove('hidden');
+    }
+});
+</script>
+</body>
+</html>
